@@ -9,8 +9,8 @@ titled "Reporting Bugs" below for how to submit a bug report.
 Dependencies
 ================================================================================
 GLib >= 2.8 - http://developer.gnome.org/arch/gtk/glib.html
-Glade >= 2.0 - http://glade.gnome.org/
-VTE - http://developer.gnome.org/doc/API/2.0/vte/
+GTK+ >= 3.2 - http://www.gtk.org/
+VTE3 >= 0.30.1 - http://developer.gnome.org/doc/API/3.0/vte/
 libConfuse - http://www.nongnu.org/confuse/
 
 
