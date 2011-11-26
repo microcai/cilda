@@ -1,7 +1,6 @@
 #include <string.h>
 
-#include <gdk/gdk.h>
-#include <gdk/gdkwindow.h>
+#include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <X11/Xlib.h>
 
@@ -69,7 +68,7 @@ grab_ungrab_with_ignorable_modifiers (GdkWindow *rootwin,
 			XGrabKey (GDK_WINDOW_XDISPLAY (rootwin),
 				  binding->keycode,
 				  binding->modifiers | mod_masks [i],
-				  GDK_WINDOW_XWINDOW (rootwin),
+				  gdk_x11_window_get_xid (rootwin),
 				  False,
 				  GrabModeAsync,
 				  GrabModeAsync);
@@ -77,7 +76,7 @@ grab_ungrab_with_ignorable_modifiers (GdkWindow *rootwin,
 			XUngrabKey (GDK_WINDOW_XDISPLAY (rootwin),
 				    binding->keycode,
 				    binding->modifiers | mod_masks [i],
-				    GDK_WINDOW_XWINDOW (rootwin));
+				    gdk_x11_window_get_xid (rootwin));
 		}
 	}
 }
@@ -294,7 +293,7 @@ tomboy_keybinder_is_modifier (guint keycode)
 	XModifierKeymap *mod_keymap;
 	gboolean retval = FALSE;
 
-	mod_keymap = XGetModifierMapping (gdk_display);
+	mod_keymap = XGetModifierMapping (gdk_x11_get_default_xdisplay());
 
 	map_size = 8 * mod_keymap->max_keypermod;
 

@@ -14,6 +14,9 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+#include <glib-object.h>
 #include <tilda-config.h>
 
 #include <debug.h>
@@ -28,25 +31,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#include <glib-object.h>
 #include <vte/vte.h>
 
 static void
 tilda_window_setup_alpha_mode (tilda_window *tw)
 {
     GdkScreen *screen;
-    GdkColormap *colormap;
+    GdkVisual *visual;
 
     screen = gtk_widget_get_screen (GTK_WIDGET (tw->window));
-    colormap = gdk_screen_get_rgba_colormap (screen);
-    if (colormap != NULL && gdk_screen_is_composited (screen))
+    visual = gdk_screen_get_rgba_visual (screen);
+    if (visual != NULL && gdk_screen_is_composited (screen))
     {
         /* Set RGBA colormap if possible so VTE can use real alpha
          * channels for transparency. */
 
-        gtk_widget_set_colormap(GTK_WIDGET (tw->window), colormap);
+        gtk_widget_set_visual(GTK_WIDGET (tw->window), visual);
         tw->have_argb_visual = TRUE;
     }
     else
@@ -320,11 +320,11 @@ static gint tilda_window_setup_keyboard_accelerators (tilda_window *tw)
 
     /* Go to Next Tab on <Ctrl>Page_Down */
 	//temp = g_cclosure_new_swap (G_CALLBACK(next_tab), tw, NULL);
-	//gtk_accel_group_connect (accel_group, GDK_Page_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+	//gtk_accel_group_connect (accel_group, GDK_KEY_Page_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Go to Prev Tab on <Ctrl>Page_Up */
 	//temp = g_cclosure_new_swap (G_CALLBACK(prev_tab), tw, NULL);
-	//gtk_accel_group_connect (accel_group, GDK_Page_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+	//gtk_accel_group_connect (accel_group, GDK_KEY_Page_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Add New Tab on <Ctrl><Shift>t */
 	//temp = g_cclosure_new_swap (G_CALLBACK(tilda_window_add_tab), tw, NULL);
@@ -337,34 +337,34 @@ static gint tilda_window_setup_keyboard_accelerators (tilda_window *tw)
     /* Goto Tab # */
     /* Know a better way? Then you do. */
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_1), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '1', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '1', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_2), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '2', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '2', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_3), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '3', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '3', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_4), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '4', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '4', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_5), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '5', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '5', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_6), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '6', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '6', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_7), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '7', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '7', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_8), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '8', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '8', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_9), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '9', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '9', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_10), tw, NULL);
-    //gtk_accel_group_connect (accel_group, '0', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //gtk_accel_group_connect (accel_group, '0', GDK_KEY_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
     //temp = g_cclosure_new_swap (G_CALLBACK(ccopy), tw, NULL);
     //gtk_accel_group_connect (accel_group, 'c', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
@@ -374,15 +374,15 @@ static gint tilda_window_setup_keyboard_accelerators (tilda_window *tw)
 
     /* zoom up window */
     temp = g_cclosure_new_swap (G_CALLBACK(zoom_down_window), tw, NULL);
-    gtk_accel_group_connect (accel_group, GDK_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+    gtk_accel_group_connect (accel_group, GDK_KEY_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* zoom down window */
     temp = g_cclosure_new_swap (G_CALLBACK(zoom_up_window), tw, NULL);
-    gtk_accel_group_connect (accel_group, GDK_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+    gtk_accel_group_connect (accel_group, GDK_KEY_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* zoom down window */
     temp = g_cclosure_new_swap (G_CALLBACK(full_screen_window), tw, NULL);
-    gtk_accel_group_connect (accel_group, GDK_F11, 0, GTK_ACCEL_VISIBLE, temp);
+    gtk_accel_group_connect (accel_group, GDK_KEY_F11, 0, GTK_ACCEL_VISIBLE, temp);
 
     return 0;
 }
@@ -475,10 +475,10 @@ tilda_window *tilda_window_init (const gchar *config_file, const gint instance)
     }
 
     /* Connect signal handlers */
-    g_signal_connect (G_OBJECT(tw->window), "delete_event", GTK_SIGNAL_FUNC(gtk_main_quit), tw->window);
-    g_signal_connect (G_OBJECT(tw->window), "show", GTK_SIGNAL_FUNC(focus_term), tw->notebook);
+    g_signal_connect (G_OBJECT(tw->window), "delete_event", (gtk_main_quit), tw->window);
+    g_signal_connect (G_OBJECT(tw->window), "show", (focus_term), tw->notebook);
 
-    g_signal_connect (G_OBJECT(tw->window), "focus-out-event", GTK_SIGNAL_FUNC(focus_out_event_cb), tw->window);
+    g_signal_connect (G_OBJECT(tw->window), "focus-out-event", (focus_out_event_cb), tw->window);
 
     /* Add the notebook to the window */
     gtk_container_add (GTK_CONTAINER(tw->window), tw->notebook);
@@ -492,6 +492,9 @@ tilda_window *tilda_window_init (const gchar *config_file, const gint instance)
     gtk_window_move (GTK_WINDOW(tw->window), config_getint ("x_pos"), config_getint ("y_pos"));
     gtk_window_set_default_size (GTK_WINDOW(tw->window), config_getint ("max_width"), config_getint ("max_height"));
     gtk_window_resize (GTK_WINDOW(tw->window), config_getint ("max_width"), config_getint ("max_height"));
+    /* Create GDK resources now, to prevent crashes later on */
+    gtk_widget_realize (tw->window);
+
     generate_animation_positions (tw);
 
     return tw;
@@ -550,7 +553,7 @@ gint tilda_window_add_tab (tilda_window *tw)
     label = gtk_label_new ("Tilda");
     /* Strangely enough, prepend puts pages on the end */
     index = gtk_notebook_prepend_page (GTK_NOTEBOOK(tw->notebook), tt->hbox, label);
-    gtk_notebook_set_tab_label_packing (GTK_NOTEBOOK(tw->notebook), tt->hbox, TRUE, TRUE, GTK_PACK_END);
+    gtk_container_child_set( tw->notebook, tt->hbox, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
     gtk_notebook_set_current_page (GTK_NOTEBOOK(tw->notebook), index);
 
     /* We should show the tabs if there are more than one tab in the notebook */

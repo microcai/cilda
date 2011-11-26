@@ -31,7 +31,7 @@
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
-#include <gtk/gtkmain.h>
+#include <gtk/gtk.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -123,9 +123,9 @@ void tilda_window_set_active (tilda_window *tw)
     DEBUG_FUNCTION ("tilda_window_set_active");
     DEBUG_ASSERT (tw != NULL);
 
-    Display *x11_display = GDK_WINDOW_XDISPLAY( tw->window->window );
-    Window *x11_window = GDK_WINDOW_XWINDOW( tw->window->window );
-    Window *x11_root_window = GDK_WINDOW_XWINDOW ( gtk_widget_get_root_window (tw->window) );
+    Display *x11_display = gdk_x11_get_default_xdisplay();
+    Window *x11_window = gdk_x11_window_get_xid( gtk_widget_get_window(tw->window) );
+    Window *x11_root_window = gdk_x11_window_get_xid ( gtk_widget_get_root_window (tw->window) );
     GdkScreen *screen = gtk_widget_get_screen (tw->window);
 
     XEvent event;
@@ -238,7 +238,7 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
     {
         screen = gdk_screen_get_default();
         awin = gdk_screen_get_active_window(screen);
-        if (awin != tw->window->window) {
+        if (awin != gtk_widget_get_window(tw->window)) {
             int num =  gdk_screen_get_primary_monitor(screen);
             GdkRectangle rt;
             gdk_screen_get_monitor_geometry(screen, num, &rt);

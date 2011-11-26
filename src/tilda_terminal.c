@@ -93,7 +93,7 @@ struct tilda_term_ *tilda_term_init (struct tilda_window_ *tw)
     term->vte_term = vte_terminal_new ();
 
     /* Create the scrollbar for the terminal */
-    term->scrollbar = gtk_vscrollbar_new (VTE_TERMINAL(term->vte_term)->adjustment);
+    term->scrollbar = gtk_vscrollbar_new (gtk_scrollable_get_vadjustment(term->vte_term));
 
     /* Set properties of the terminal */
     tilda_term_config_defaults (term);
@@ -220,8 +220,8 @@ static void iconify_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_iconify ((GTK_WIDGET(data))->window);
+        if ( gtk_widget_get_window(data))
+            gdk_window_iconify (gtk_widget_get_window(GTK_WIDGET(data)));
 }
 
 static void deiconify_window_cb (GtkWidget *widget, gpointer data)
@@ -230,8 +230,8 @@ static void deiconify_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_deiconify ((GTK_WIDGET(data))->window);
+        if (gtk_widget_get_window (GTK_WIDGET(data)) )
+            gdk_window_deiconify (gtk_widget_get_window (GTK_WIDGET(data)) );
 }
 
 static void raise_window_cb (GtkWidget *widget, gpointer data)
@@ -240,8 +240,8 @@ static void raise_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_raise ((GTK_WIDGET(data))->window);
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
+            gdk_window_raise (gtk_widget_get_window (GTK_WIDGET(data)));
 }
 
 static void lower_window_cb (GtkWidget *widget, gpointer data)
@@ -250,8 +250,8 @@ static void lower_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_lower ((GTK_WIDGET(data))->window);
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
+            gdk_window_lower (gtk_widget_get_window (GTK_WIDGET(data)));
 }
 
 static void maximize_window_cb (GtkWidget *widget, gpointer data)
@@ -260,8 +260,8 @@ static void maximize_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_maximize ((GTK_WIDGET(data))->window);
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
+            gdk_window_maximize (gtk_widget_get_window (GTK_WIDGET(data)));
 }
 
 static void restore_window_cb (GtkWidget *widget, gpointer data)
@@ -270,8 +270,8 @@ static void restore_window_cb (GtkWidget *widget, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_unmaximize ((GTK_WIDGET(data))->window);
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
+            gdk_window_unmaximize ( gtk_widget_get_window (GTK_WIDGET(data)));
 }
 
 static void refresh_window_cb (GtkWidget *widget, gpointer data)
@@ -282,12 +282,9 @@ static void refresh_window_cb (GtkWidget *widget, gpointer data)
     GdkRectangle rect;
     if (GTK_IS_WIDGET(data))
     {
-        if ((GTK_WIDGET(data))->window)
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
         {
-            rect.x = rect.y = 0;
-            rect.width = (GTK_WIDGET(data))->allocation.width;
-            rect.height = (GTK_WIDGET(data))->allocation.height;
-            gdk_window_invalidate_rect ((GTK_WIDGET(data))->window, &rect, TRUE);
+            gdk_window_invalidate_rect (gtk_widget_get_window (GTK_WIDGET(data)), NULL, TRUE);
         }
     }
 }
@@ -298,8 +295,8 @@ static void move_window_cb (GtkWidget *widget, guint x, guint y, gpointer data)
     DEBUG_ASSERT (data != NULL);
 
     if (GTK_IS_WIDGET(data))
-        if ((GTK_WIDGET(data))->window)
-            gdk_window_move ((GTK_WIDGET(data))->window, x, y);
+        if (gtk_widget_get_window (GTK_WIDGET(data)))
+            gdk_window_move (gtk_widget_get_window (GTK_WIDGET(data)), x, y);
 }
 
 static void adjust_font_size (GtkWidget *widget, gpointer data, gint howmuch)
@@ -315,13 +312,13 @@ static void adjust_font_size (GtkWidget *widget, gpointer data, gint howmuch)
 
     /* Read the screen dimensions in cells. */
     terminal = VTE_TERMINAL(widget);
-    columns = terminal->column_count;
-    rows = terminal->row_count;
+    columns = vte_terminal_get_column_count(terminal);//->column_count;
+    rows = vte_terminal_get_row_count(terminal); //->row_count;
 
     /* Take into account padding and border overhead. */
     gtk_window_get_size(GTK_WINDOW(data), &owidth, &oheight);
-    owidth -= terminal->char_width * terminal->column_count;
-    oheight -= terminal->char_height * terminal->row_count;
+    owidth -= vte_terminal_get_char_width(terminal) *  vte_terminal_get_column_count(terminal);//->column_count;
+    oheight -= vte_terminal_get_char_height(terminal)   * vte_terminal_get_row_count(terminal);//->row_count;
 
     /* Calculate the new font size. */
     desired = pango_font_description_copy (vte_terminal_get_font(terminal));
@@ -770,9 +767,9 @@ static int button_press_cb (GtkWidget *widget, GdkEventButton *event, gpointer d
             vte_terminal_get_padding (terminal, &xpad, &ypad);
             match = vte_terminal_match_check (terminal,
                     (event->x - ypad) /
-                    terminal->char_width,
+                    vte_terminal_get_char_width( terminal) , //->char_width,
                     (event->y - ypad) /
-                    terminal->char_height,
+                    vte_terminal_get_char_height( terminal) , //->char_height,
                     &tag);
 
             /* Check if we can launch a web browser, and do so if possible */
