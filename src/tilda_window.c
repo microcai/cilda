@@ -56,7 +56,7 @@ tilda_window_setup_alpha_mode (tilda_window *tw)
 }
 
 
-static tilda_term* find_tt_in_g_list (tilda_window *tw, gint pos)
+tilda_term* find_tt_in_g_list (tilda_window *tw, gint pos)
 {
     DEBUG_FUNCTION ("find_tt_in_g_list");
     DEBUG_ASSERT (tw != NULL);
@@ -112,6 +112,59 @@ gint tilda_window_set_tab_position (tilda_window *tw, enum notebook_tab_position
     }
 
     return 0;
+}
+
+static gint full_screen_window (tilda_window *tw)
+{
+	static gint s_is_full = FALSE;
+	static gint sh;
+	static gint sw;
+	static gint sx;
+	static gint sy;
+
+	if (s_is_full) {
+		s_is_full = FALSE;
+		gtk_window_unmaximize(GTK_WINDOW(tw->window));
+        //screen = gdk_screen_get_default();
+        //awin = gdk_screen_get_active_window(screen);
+        //gtk_window_move (GTK_WINDOW(tw->window), rt.x + config_getint ("x_pos"), rt.y + config_getint ("y_pos"));
+
+		gtk_window_set_default_size (GTK_WINDOW(tw->window), config_getint ("max_width"), config_getint ("max_height"));
+		gtk_window_resize (GTK_WINDOW(tw->window), sw, sh);
+		gtk_window_move (GTK_WINDOW(tw->window), sx, sy);
+	} else {
+		s_is_full = TRUE;
+		gtk_window_get_size(GTK_WINDOW(tw->window), &sw, &sh);
+		gtk_window_get_position(GTK_WINDOW(tw->window), &sx, &sy);
+		gtk_window_maximize(GTK_WINDOW(tw->window));
+	}
+	return TRUE;
+}
+
+static gint zoom_up_window (tilda_window *tw)
+{
+	gint w, h, sw, sh;
+	GdkScreen* screen;
+	screen = gdk_screen_get_default();
+	sw = gdk_screen_get_width(screen);
+	sh = gdk_screen_get_height(screen);
+	gtk_window_get_size(GTK_WINDOW(tw->window), &w, &h);
+	h += 10;
+	if ( h > sh)
+		h = sh;
+	gtk_window_resize (GTK_WINDOW(tw->window), w, h);
+	return TRUE;
+}
+
+static gint zoom_down_window (tilda_window *tw)
+{
+	gint w, h;
+	gtk_window_get_size(GTK_WINDOW(tw->window), &w, &h);
+	h -= 10;
+	if ( h < 20)
+		h = 20;
+	gtk_window_resize (GTK_WINDOW(tw->window), w, h);
+	return TRUE;
 }
 
 static gint next_tab (tilda_window *tw)
@@ -266,58 +319,70 @@ static gint tilda_window_setup_keyboard_accelerators (tilda_window *tw)
     gtk_accel_group_connect (accel_group, 'q', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Go to Next Tab on <Ctrl>Page_Down */
-    temp = g_cclosure_new_swap (G_CALLBACK(next_tab), tw, NULL);
-    gtk_accel_group_connect (accel_group, GDK_Page_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+	//temp = g_cclosure_new_swap (G_CALLBACK(next_tab), tw, NULL);
+	//gtk_accel_group_connect (accel_group, GDK_Page_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Go to Prev Tab on <Ctrl>Page_Up */
-    temp = g_cclosure_new_swap (G_CALLBACK(prev_tab), tw, NULL);
-    gtk_accel_group_connect (accel_group, GDK_Page_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+	//temp = g_cclosure_new_swap (G_CALLBACK(prev_tab), tw, NULL);
+	//gtk_accel_group_connect (accel_group, GDK_Page_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Add New Tab on <Ctrl><Shift>t */
-    temp = g_cclosure_new_swap (G_CALLBACK(tilda_window_add_tab), tw, NULL);
-    gtk_accel_group_connect (accel_group, 't', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
+	//temp = g_cclosure_new_swap (G_CALLBACK(tilda_window_add_tab), tw, NULL);
+	//gtk_accel_group_connect (accel_group, 't', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Close Current Tab on <Ctrl><Shift>w */
-    temp = g_cclosure_new_swap (G_CALLBACK(tilda_window_close_current_tab), tw, NULL);
-    gtk_accel_group_connect (accel_group, 'w', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
+	//temp = g_cclosure_new_swap (G_CALLBACK(tilda_window_close_current_tab), tw, NULL);
+	//gtk_accel_group_connect (accel_group, 'w', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
 
     /* Goto Tab # */
     /* Know a better way? Then you do. */
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_1), tw, NULL);
-    gtk_accel_group_connect (accel_group, '1', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_1), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '1', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_2), tw, NULL);
-    gtk_accel_group_connect (accel_group, '2', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_2), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '2', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_3), tw, NULL);
-    gtk_accel_group_connect (accel_group, '3', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_3), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '3', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_4), tw, NULL);
-    gtk_accel_group_connect (accel_group, '4', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_4), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '4', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_5), tw, NULL);
-    gtk_accel_group_connect (accel_group, '5', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_5), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '5', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_6), tw, NULL);
-    gtk_accel_group_connect (accel_group, '6', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_6), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '6', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_7), tw, NULL);
-    gtk_accel_group_connect (accel_group, '7', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_7), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '7', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_8), tw, NULL);
-    gtk_accel_group_connect (accel_group, '8', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_8), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '8', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_9), tw, NULL);
-    gtk_accel_group_connect (accel_group, '9', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_9), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '9', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_10), tw, NULL);
-    gtk_accel_group_connect (accel_group, '0', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(goto_tab_10), tw, NULL);
+    //gtk_accel_group_connect (accel_group, '0', GDK_MOD1_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(ccopy), tw, NULL);
-    gtk_accel_group_connect (accel_group, 'c', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(ccopy), tw, NULL);
+    //gtk_accel_group_connect (accel_group, 'c', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
 
-    temp = g_cclosure_new_swap (G_CALLBACK(cpaste), tw, NULL);
-    gtk_accel_group_connect (accel_group, 'v', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
+    //temp = g_cclosure_new_swap (G_CALLBACK(cpaste), tw, NULL);
+    //gtk_accel_group_connect (accel_group, 'v', GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE, temp);
+
+    /* zoom up window */
+    temp = g_cclosure_new_swap (G_CALLBACK(zoom_down_window), tw, NULL);
+    gtk_accel_group_connect (accel_group, GDK_Up, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+
+    /* zoom down window */
+    temp = g_cclosure_new_swap (G_CALLBACK(zoom_up_window), tw, NULL);
+    gtk_accel_group_connect (accel_group, GDK_Down, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE, temp);
+
+    /* zoom down window */
+    temp = g_cclosure_new_swap (G_CALLBACK(full_screen_window), tw, NULL);
+    gtk_accel_group_connect (accel_group, GDK_F11, 0, GTK_ACCEL_VISIBLE, temp);
 
     return 0;
 }

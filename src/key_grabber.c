@@ -179,9 +179,12 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
     DEBUG_ASSERT (state == PULL_UP || state == PULL_DOWN || state == PULL_TOGGLE);
 
     gint i;
+    GdkWindow* awin;
+	GdkScreen* screen;
 
     if (tw->current_state == UP && state != PULL_UP)
     {
+
         /* Keep things here just like they are. If you use gtk_window_present() here, you
          * will introduce some weird graphical glitches. Also, calling gtk_window_move()
          * before showing the window avoids yet more glitches. You should probably not use
@@ -190,9 +193,16 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
          * Overriding the user time here seems to work a lot better than calling
          * gtk_window_present_with_time() here, or at the end of the function. I have
          * no idea why, they should do the same thing. */
-        gdk_x11_window_set_user_time (GTK_WIDGET(tw->window)->window,
+
+        gdk_x11_window_set_user_time (GTK_WIDGET(tw->window),
                                       tomboy_keybinder_get_current_event_time());
-        gtk_window_move (GTK_WINDOW(tw->window), config_getint ("x_pos"), config_getint ("y_pos"));
+        screen = gdk_screen_get_default();
+        int num =  gdk_screen_get_primary_monitor(screen);
+        GdkRectangle rt;
+        gdk_screen_get_monitor_geometry(screen, num, &rt);
+
+        gtk_window_move (GTK_WINDOW(tw->window), rt.x + config_getint ("x_pos"), rt.y + config_getint ("y_pos"));
+        gtk_window_set_default_size (GTK_WINDOW(tw->window), config_getint ("max_width"), config_getint ("max_height"));
         gtk_widget_show (GTK_WIDGET(tw->window));
 
         /* Nasty code to make metacity behave. Starting at metacity-2.22 they "fixed" the
@@ -209,41 +219,54 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
         if (config_getbool ("pinned"))
             gtk_window_stick (GTK_WINDOW (tw->window));
 
-        if (config_getbool ("animation"))
-        {
-            for (i=0; i<16; i++)
-            {
-                gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
-                gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
+        //if (config_getbool ("animation"))
+        //{
+            //for (i=0; i<16; i++)
+            //{
+                //gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
+                //gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
 
-                process_all_pending_gtk_events ();
-                g_usleep (config_getint ("slide_sleep_usec"));
-            }
-        }
+                //process_all_pending_gtk_events ();
+                //g_usleep (config_getint ("slide_sleep_usec"));
+            //}
+        //}
 
-        debug_printf ("pull(): MOVED DOWN\n");
+        //debug_printf ("pull(): MOVED DOWN\n");
         tw->current_state = DOWN;
     }
     else if (state != PULL_DOWN)
     {
-        if (config_getbool ("animation"))
-        {
-            for (i=15; i>=0; i--)
-            {
-                gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
-                gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
+        screen = gdk_screen_get_default();
+        awin = gdk_screen_get_active_window(screen);
+        if (awin != tw->window->window) {
+            int num =  gdk_screen_get_primary_monitor(screen);
+            GdkRectangle rt;
+            gdk_screen_get_monitor_geometry(screen, num, &rt);
 
-                process_all_pending_gtk_events ();
-                g_usleep (config_getint ("slide_sleep_usec"));
-            }
+            gtk_window_move (GTK_WINDOW(tw->window), rt.x + config_getint ("x_pos"), rt.y + config_getint ("y_pos"));
+            gtk_widget_show (GTK_WIDGET(tw->window));
+            tilda_window_set_active (tw);
+            return ;
         }
+
+        //if (config_getbool ("animation"))
+        //{
+            //for (i=15; i>=0; i--)
+            //{
+                //gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
+                //gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
+
+                //process_all_pending_gtk_events ();
+                //g_usleep (config_getint ("slide_sleep_usec"));
+            //}
+        //}
 
         /* All we have to do at this point is hide the window.
          * Case 1 - Animation on:  The window has shrunk, just hide it
          * Case 2 - Animation off: Just hide the window */
         gtk_widget_hide (GTK_WIDGET(tw->window));
 
-        debug_printf ("pull(): MOVED UP\n");
+        //debug_printf ("pull(): MOVED UP\n");
         tw->current_state = UP;
     }
 }

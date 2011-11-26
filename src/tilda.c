@@ -50,6 +50,77 @@
 #include <glib/gstdio.h>
 
 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h> 
+#include <fcntl.h>
+#include <sys/un.h>
+
+
+static const char remote_control_sock_filename[]="/tmp/tilda.socket";
+int create_socket(const char *name)
+{
+	int fd;
+	int r;
+	struct sockaddr_un uds_addr;
+
+	/* JIC */
+	unlink(name);
+
+	fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (fd < 0) {
+		return fd;
+	}
+
+	/* setup address struct */
+	memset(&uds_addr, 0, sizeof(uds_addr));
+	uds_addr.sun_family = AF_UNIX;
+	strcpy(uds_addr.sun_path, name);
+
+	/* bind it to the socket */
+	r = bind(fd, (struct sockaddr *)&uds_addr, sizeof(uds_addr));
+	if (r < 0) {
+		return r;
+	}
+
+
+	/* listen - allow 10 to queue */
+	r = listen(fd, 10);
+	if (r < 0) {
+		return r;
+	}
+
+	return fd;
+}
+
+
+
+gboolean remote_control_fun(GIOChannel* source, GIOCondition condition, gpointer data)
+{
+	int client_fd = 0;
+	int listen_fd = g_io_channel_unix_get_fd(source);
+	int in = 0;
+	tilda_window*  tw = (tilda_window*)data;
+	tilda_term *tt;
+	gint pos;
+
+	struct sockaddr_un cliaddr;
+	socklen_t len = sizeof(struct sockaddr_un);
+	client_fd = accept(listen_fd, (struct sockaddr *)&cliaddr, &len);
+	read(client_fd, &in, sizeof(int));
+	
+    pos = gtk_notebook_get_current_page (GTK_NOTEBOOK (tw->notebook));
+	tt = find_tt_in_g_list (tw, pos);
+	if (in) 
+		vte_terminal_set_cursor_shape(tt->vte_term, VTE_CURSOR_SHAPE_IBEAM);
+	else
+		vte_terminal_set_cursor_shape(tt->vte_term, VTE_CURSOR_SHAPE_BLOCK);
+
+	close(client_fd);
+	return TRUE;
+}
+
 static gchar *create_lock_file (gchar *home_directory, struct lock_info lock)
 {
     DEBUG_FUNCTION ("create_lock_file");
@@ -319,6 +390,7 @@ static gboolean parse_cli (int argc, char *argv[])
     GError *error = NULL;
     GOptionContext *context = g_option_context_new (NULL);
     g_option_context_add_main_entries (context, cl_opts, NULL);
+	GIOChannel* remote_control_sock;
     g_option_context_add_group (context, gtk_get_option_group (TRUE));
     g_option_context_parse (context, &argc, &argv, &error);
     g_option_context_free (context);
@@ -511,6 +583,8 @@ int main (int argc, char *argv[])
     struct lock_info lock;
     gboolean need_wizard = FALSE;
     gchar *home_dir, *config_file, *lock_file;
+	int remote_control_sock;
+	GIOChannel* remote_control_channel;
 
     home_dir = g_strdup (g_get_home_dir ());
 
@@ -619,8 +693,23 @@ int main (int argc, char *argv[])
         pull (tw, PULL_DOWN);
     }
 
+
+	remote_control_sock = create_socket(remote_control_sock_filename);
+	if (remote_control_sock < 0) {
+		fprintf(stderr, "Can't open socket %s: %s\n", remote_control_sock_filename, strerror(errno));
+		return 0;
+	}
+
+	fcntl(remote_control_sock, F_SETFD, FD_CLOEXEC);
+	chmod(remote_control_sock_filename, 0666);
+	remote_control_channel = g_io_channel_unix_new(remote_control_sock);
+	g_io_add_watch(remote_control_channel, G_IO_IN, remote_control_fun, tw);
+
     /* Whew! We're finally all set up and ready to run GTK ... */
     gtk_main();
+
+	close(remote_control_sock);
+	g_io_channel_unref(remote_control_channel);
 
     /* Ok, we're at the end of our run. Time to clean up ... */
     tilda_window_free (tw);

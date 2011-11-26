@@ -497,7 +497,32 @@ static gint tilda_term_config_defaults (tilda_term *tt)
     fg.green =    config_getint ("text_green");
     fg.blue  =    config_getint ("text_blue");
 
-    vte_terminal_set_colors (VTE_TERMINAL(tt->vte_term), &fg, &bg, NULL, 0);
+    static char* palette_color[] = { 
+        "#000000000000",
+        "#cccc00000000",
+        "#4e4e9a9a0606",
+        "#c4c4a0a00000",
+        "#34346565a4a4",
+        "#757550507b7b",
+        "#060698209a9a",
+        "#d3d3d7d7cfcf",
+        "#555557575353",
+        "#efef29292929",
+        "#8a8ae2e23434",
+        "#fcfce9e94f4f",
+        "#72729f9fcfcf",
+        "#adad7f7fa8a8",
+        "#3434e2e2e2e2",
+        "#eeeeeeeeecec" };
+
+    GdkColor palette[16];
+    memset(palette, 0, sizeof(palette));
+    int i = 0;
+    for (i = 0; i < 16; i++) {
+        gdk_color_parse(palette_color[i], palette + i);
+    }
+
+    vte_terminal_set_colors (VTE_TERMINAL(tt->vte_term), &fg, &bg, &palette, 16);
 
     /** Bells **/
     vte_terminal_set_audible_bell (VTE_TERMINAL(tt->vte_term), config_getbool ("bell"));
