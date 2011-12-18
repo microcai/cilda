@@ -591,7 +591,7 @@ static gint tilda_term_config_defaults (tilda_term *tt)
     {
         vte_terminal_set_background_saturation (VTE_TERMINAL (tt->vte_term), transparency_level);
         vte_terminal_set_opacity (VTE_TERMINAL (tt->vte_term), (1.0 - transparency_level) * 0xffff);
-        vte_terminal_set_background_transparent (VTE_TERMINAL(tt->vte_term), !tt->tw->have_argb_visual);
+        //vte_terminal_set_background_transparent (VTE_TERMINAL(tt->vte_term), !tt->tw->have_argb_visual);
     }
 
     return 0;

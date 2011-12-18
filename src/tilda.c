@@ -625,12 +625,6 @@ int main (int argc, char *argv[])
     /* Initialize GTK and libglade */
     gtk_init (&argc, &argv);
 
-    /*
-     * Not needed with the new glade:
-     * ====================================
-     * glade_init ();
-     */
-
     /* create new tilda_window */
     tw = tilda_window_init (config_file, lock.instance);
 
