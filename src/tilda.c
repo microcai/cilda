@@ -35,8 +35,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <glib-object.h>
-#include <glib.h>
+#include <locale.h>
 #include <stdio.h>
 #include <signal.h>
 #include <pwd.h>
@@ -620,7 +619,7 @@ int main (int argc, char *argv[])
     XSetErrorHandler (xerror_handler);
 
     if (!g_thread_supported ())
-        g_thread_init(NULL);
+    	g_error("Need glib with thread support!");
 
     /* Initialize GTK and libglade */
     gtk_init (&argc, &argv);

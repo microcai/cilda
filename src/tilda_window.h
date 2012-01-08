@@ -56,6 +56,8 @@ void tilda_window_close_current_tab (tilda_window *tw);
 
 #define TILDA_WINDOW(data) ((tilda_window *)(data))
 
+tilda_term* find_tt_in_g_list (tilda_window *tw, gint pos);
+
 G_END_DECLS
 
 #endif

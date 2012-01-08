@@ -27,25 +27,15 @@ tilda_SOURCES = callback_func.h callback_func.c \
 		xerror.h xerror.c
 
 tilda_CFLAGS = $(AM_CFLAGS) \
-		$(GTK_CFLAGS) \
-		$(GTHREAD_CFLAGS) \
-		$(VTE_CFLAGS) \
-		$(LIBCONFUSE_CFLAGS)
-
-tilda_LDFLAGS = $(AM_LDFLAGS) \
-		$(GTK_LDFLAGS) \
-		$(GTHREAD_LDFLAGS) \
-		$(VTE_LDFLAGS) \
-		$(LIBCONFUSE_LDFLAGS)
+		@GTK_CFLAGS@ \
+		@GLIB_CFLAGS@ \
+		@VTE_CFLAGS@ \
+		@LIBCONFUSE_CFLAGS@
 
 tilda_LDADD = $(AM_LDADD) \
-		$(GTK_LIBS) \
-		$(GTHREAD_LIBS) \
-		$(VTE_LIBS) \
-		$(LIBCONFUSE_LIBS) \
-		$(LTLIBINTL) \
-		$(LEXLIB)
-
-maintainer-clean-generic:
-	-rm Makefile.in
-
+		@GTK_LIBS@ \
+		@GLIB_LIBS@ \
+		@VTE_LIBS@ \
+		@LIBCONFUSE_LIBS@ \
+		@LTLIBINTL@ \
+		@LEXLIB@

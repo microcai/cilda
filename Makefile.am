@@ -2,8 +2,9 @@
 # vim: set ts=8 sts=8 sw=8:
 
 AUTOMAKE_OPTIONS = gnu
+ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = po m4 src
+SUBDIRS = po src
 
 MAINTAINER_CLEAN_FILES = Makefile \
 		src/Makefile \
@@ -23,10 +24,6 @@ Pixmaps_DATA = tilda.png
 
 data_DATA = tilda.glade
 
-EXTRA_DIST = tilda.desktop.in tilda.png tilda.glade
+EXTRA_DIST = m4 tilda.desktop.in tilda.png tilda.glade
 
-tilda.desktop: tilda.desktop.in
-	sed -e 's|\@BINDIR\@|$(bindir)|' \
-	    -e 's|\@PIXMAPSDIR\@|$(datadir)/applications|' $< > $@
 
-ACLOCAL_AMFLAGS = -I m4
