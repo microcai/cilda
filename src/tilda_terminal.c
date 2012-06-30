@@ -20,7 +20,6 @@
 #include <tilda.h>
 #include <tilda_window.h>
 #include <tilda_terminal.h>
-#include <callback_func.h>
 #include <configsys.h>
 #include <translation.h>
 #include <wizard.h> /* wizard */
@@ -109,8 +108,6 @@ struct tilda_term_ *tilda_term_init (struct tilda_window_ *tw)
     /** Signal Connection **/
     g_signal_connect (G_OBJECT(term->vte_term), "child-exited",
                       G_CALLBACK(child_exited_cb), term);
-    g_signal_connect (G_OBJECT(term->vte_term), "window-title-changed",
-                      G_CALLBACK(window_title_changed_cb), term);
     g_signal_connect (G_OBJECT(term->vte_term), "eof",
                       G_CALLBACK(child_exited_cb), term);
     g_signal_connect (G_OBJECT(term->vte_term), "status-line-changed",
@@ -188,22 +185,6 @@ void tilda_term_set_scrollbar_position (tilda_term *tt, enum tilda_term_scrollba
             gtk_widget_hide (tt->scrollbar);
             break;
     }
-}
-
-static void window_title_changed_cb (GtkWidget *widget, gpointer data)
-{
-    DEBUG_FUNCTION ("window_title_changed_cb");
-    DEBUG_ASSERT (widget != NULL);
-    DEBUG_ASSERT (data != NULL);
-
-    tilda_term *tt = TILDA_TERM(data);
-    gchar *title = get_window_title (widget);
-    GtkWidget *label;
-
-    label = gtk_notebook_get_tab_label (GTK_NOTEBOOK (tt->tw->notebook), tt->hbox);
-    gtk_label_set_text (GTK_LABEL(label), title);
-
-    g_free (title);
 }
 
 static void status_line_changed_cb (GtkWidget *widget, gpointer data)

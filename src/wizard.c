@@ -23,7 +23,6 @@
 #include <key_grabber.h>
 #include <translation.h>
 #include <configsys.h>
-#include <callback_func.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
@@ -66,7 +65,7 @@ gint wizard (tilda_window *ltw)
     DEBUG_ASSERT (ltw != NULL);
 
     gchar *window_title;
-    const gchar *glade_file = g_build_filename (DATADIR, "tilda.glade", NULL);
+    const gchar *glade_file = g_build_filename (DATADIR, "tilda.ui", NULL);
     GtkWidget *wizard_window;
 
     /* Make sure that there isn't already a wizard showing */
@@ -269,30 +268,6 @@ static gint get_display_dimension (const enum dimensions dimension)
     return -1;
 }
 
-static void window_title_change_all ()
-{
-    DEBUG_FUNCTION ("window_title_change_all");
-
-    GtkWidget *page;
-    GtkWidget *label;
-    tilda_term *tt;
-    gchar *title;
-    gint i, size, list_count;
-
-    size = gtk_notebook_get_n_pages (GTK_NOTEBOOK(tw->notebook));
-    list_count = size-1;
-
-    for (i=0;i<size;i++,list_count--)
-    {
-        tt = g_list_nth (tw->terms, list_count)->data;
-        title = get_window_title (tt->vte_term);
-        page = gtk_notebook_get_nth_page (GTK_NOTEBOOK (tw->notebook), i);
-        label = gtk_notebook_get_tab_label (GTK_NOTEBOOK (tw->notebook), page);
-        gtk_label_set_label (GTK_LABEL(label), title);
-        g_free (title);
-    }
-}
-
 static void set_spin_value_while_blocking_callback (GtkSpinButton *spin, void (*callback)(GtkWidget *w), gint new_val)
 {
     g_signal_handlers_block_by_func (spin, (*callback), NULL);
@@ -461,21 +436,6 @@ static void button_font_font_set_cb (GtkWidget *w)
     }
 }
 
-static void entry_title_changed_cb (GtkWidget *w)
-{
-    const gchar *title = gtk_entry_get_text (GTK_ENTRY(w));
-
-    config_setstr ("title", title);
-    window_title_change_all ();
-}
-
-static void combo_dynamically_set_title_changed_cb (GtkWidget *w)
-{
-    const gint status = gtk_combo_box_get_active (GTK_COMBO_BOX(w));
-
-    config_setint ("d_set_title", status);
-    window_title_change_all ();
-}
 
 static void check_run_custom_command_toggled_cb (GtkWidget *w)
 {
@@ -1158,7 +1118,7 @@ static void set_wizard_state_from_config ()
     TEXT_ENTRY ("entry_keybinding", "key");
 }
 
-#define CONNECT_SIGNAL(GLADE_WIDGET,SIGNAL_NAME,SIGNAL_HANDLER) g_signal_connect (gtk_builder_get_object (builder, (GLADE_WIDGET)), (SIGNAL_NAME), ((SIGNAL_HANDLER)), NULL)
+#define CONNECT_SIGNAL(GLADE_WIDGET,SIGNAL_NAME,SIGNAL_HANDLER) g_signal_connect (gtk_builder_get_object (builder, (GLADE_WIDGET)), (SIGNAL_NAME), (GCallback)((SIGNAL_HANDLER)), NULL)
 
 /* Connect all signals in the wizard. This should be done after setting all
  * values, that way all of the signal handlers don't get called */
@@ -1181,9 +1141,6 @@ static void connect_wizard_signals ()
     CONNECT_SIGNAL ("button_font","font-set",button_font_font_set_cb);
 
     /* Title and Command Tab */
-    CONNECT_SIGNAL ("entry_title","changed",entry_title_changed_cb);
-    CONNECT_SIGNAL ("combo_dynamically_set_title","changed",combo_dynamically_set_title_changed_cb);
-
     CONNECT_SIGNAL ("check_run_custom_command","toggled",check_run_custom_command_toggled_cb);
     CONNECT_SIGNAL ("combo_command_exit","changed",combo_command_exit_changed_cb);
 

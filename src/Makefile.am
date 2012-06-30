@@ -11,8 +11,7 @@ DEFS = -DLOCALEDIR=\"$(localedir)\" -DDATADIR=\"$(datadir)\" @DEFS@
 bin_PROGRAMS = tilda
 
 # Keep the headers here so that make dist-bzip2 works
-tilda_SOURCES = callback_func.h callback_func.c \
-		configsys.h configsys.c \
+tilda_SOURCES = configsys.h configsys.c \
 		debug.h \
 		eggaccelerators.h eggaccelerators.c \
 		gettext.h \
