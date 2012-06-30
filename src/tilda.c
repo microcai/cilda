@@ -20,7 +20,6 @@
 #include <configsys.h>
 #include <tilda_window.h>
 #include <key_grabber.h> /* for pull */
-#include <xerror.h>
 #include <translation.h>
 
 #include <sys/ioctl.h>
@@ -32,8 +31,6 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <locale.h>
-#include <stdio.h>
-#include <signal.h>
 #include <pwd.h>
 
 #include <X11/Xlib.h>
@@ -214,29 +211,17 @@ static gchar *get_config_file_name ()
     return config_file;
 }
 
-static void termination_handler (gint signum)
-{
-    DEBUG_FUNCTION ("termination_handler");
-
-    gtk_main_quit ();
-}
-
 int main (int argc, char *argv[])
 {
     DEBUG_FUNCTION ("main");
 
     tilda_window *tw = NULL;
 
-    struct sigaction sa;
-    struct lock_info lock;
     gboolean need_wizard = FALSE;
-    gchar *home_dir, *config_file, *lock_file;
-	int remote_control_sock;
-	GIOChannel* remote_control_channel;
+    gchar *config_file;
 
-    home_dir = g_strdup (g_get_home_dir ());
 
-    config_file = get_config_file_name (home_dir);
+    config_file = get_config_file_name ();
 
 #if ENABLE_NLS
     /* Gettext Initialization */
@@ -258,9 +243,6 @@ int main (int argc, char *argv[])
     /* Parse the command line */
     need_wizard = parse_cli (argc, argv);
 
-    /* We're about to startup X, so set the error handler. */
-    XSetErrorHandler (xerror_handler);
-
     if (!g_thread_supported ())
     	g_error("Need glib with thread support!");
 
@@ -268,7 +250,7 @@ int main (int argc, char *argv[])
     gtk_init (&argc, &argv);
 
     /* create new tilda_window */
-    tw = tilda_window_init (config_file, lock.instance);
+    tw = tilda_window_init (config_file);
 
     /* Check the allocations above */
     if (tw == NULL)
@@ -277,25 +259,10 @@ int main (int argc, char *argv[])
     /* Initialize and set up the keybinding to toggle tilda's visibility. */
     tomboy_keybinder_init ();
 
-    /* Hook up signal handlers */
-    sa.sa_handler = termination_handler;
-    sigemptyset (&sa.sa_mask);
-    sa.sa_flags = 0;
-
-    sigaction (SIGINT,  &sa, NULL);
-    sigaction (SIGQUIT, &sa, NULL);
-    sigaction (SIGABRT, &sa, NULL);
-    sigaction (SIGTERM, &sa, NULL);
-    sigaction (SIGKILL, &sa, NULL);
-
     /* If the config file doesn't exist open up the wizard */
     if (access (tw->config_file, R_OK) == -1)
     {
-        /* We probably need a default key, too ... */
-        gchar *default_key = g_strdup_printf ("F%d", tw->instance+1);
-        config_setstr ("key", default_key);
-        g_free (default_key);
-
+        config_setstr ("key", "F1");
         need_wizard = TRUE;
     }
 
@@ -321,7 +288,7 @@ int main (int argc, char *argv[])
         /* It does not cause graphical glitches to make tilda hidden on start this way.
          * It does make tilda appear much faster on it's first appearance, so I'm leaving
          * it this way, because it has a good benefit, and no apparent drawbacks. */
-        gtk_widget_show (GTK_WIDGET(tw->window));
+        gtk_widget_show_all(GTK_WIDGET(tw->window));
         gtk_widget_hide (GTK_WIDGET(tw->window));
     }
     else

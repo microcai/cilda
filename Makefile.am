@@ -22,8 +22,8 @@ Applications_DATA = tilda.desktop
 Pixmapsdir = ${datadir}/pixmaps
 Pixmaps_DATA = tilda.png
 
-data_DATA = tilda.glade
+data_DATA = tilda.ui
 
-EXTRA_DIST = m4 tilda.desktop.in tilda.png tilda.glade
+EXTRA_DIST = m4 tilda.desktop.in tilda.png tilda.ui
 
 

@@ -411,42 +411,33 @@ launch_default_shell:
 }
 
 
-static void child_exited_cb (GtkWidget *widget, gpointer data)
+static void child_exited_cb(GtkWidget *widget, gpointer data)
 {
-    DEBUG_FUNCTION ("child_exited_cb");
-    DEBUG_ASSERT (widget != NULL);
-    DEBUG_ASSERT (data != NULL);
+	DEBUG_FUNCTION("child_exited_cb");
+	DEBUG_ASSERT (widget != NULL);
+	DEBUG_ASSERT (data != NULL);
 
-    tilda_term *tt = TILDA_TERM(data);
-    gint index = gtk_notebook_page_num (GTK_NOTEBOOK(tt->tw->notebook), tt->hbox);
+	tilda_term *tt = TILDA_TERM(data);
 
-    /* Make sure we got a valid index */
-    if (index == -1)
-    {
-        DEBUG_ERROR ("Bad notebook tab\n");
-        return;
-    }
+	enum command_exit {
+		HOLD_TERMINAL_OPEN, RESTART_COMMAND, EXIT_TERMINAL
+	};
 
-    /* These can stay here. They don't need to go into a header because
-     * they are only used at this point in the code. */
-    enum command_exit { HOLD_TERMINAL_OPEN, RESTART_COMMAND, EXIT_TERMINAL };
-
-    /* Check the user's preference for what to do when the child terminal
-     * is closed. Take the appropriate action */
-    switch (config_getint ("command_exit"))
-    {
-        case EXIT_TERMINAL:
-            tilda_window_close_tab (tt->tw, index);
-            break;
-        case RESTART_COMMAND:
-            vte_terminal_feed (VTE_TERMINAL(tt->vte_term), "\r\n\r\n", 4);
-            start_shell (tt);
-            break;
-        case HOLD_TERMINAL_OPEN:
-            break;
-        default:
-            break;
-    }
+	/* Check the user's preference for what to do when the child terminal
+	 * is closed. Take the appropriate action */
+	switch (config_getint("command_exit")) {
+	case EXIT_TERMINAL:
+		gtk_main_quit();
+		break;
+	case RESTART_COMMAND:
+		vte_terminal_feed(VTE_TERMINAL(tt->vte_term), "\r\n\r\n", 4);
+		start_shell(tt);
+		break;
+	case HOLD_TERMINAL_OPEN:
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -622,26 +613,6 @@ menu_quit_cb (GtkWidget *widget, gpointer data)
     gtk_main_quit ();
 }
 
-static void
-menu_add_tab_cb (GtkWidget *widget, gpointer data)
-{
-    DEBUG_FUNCTION ("menu_add_tab_cb");
-    DEBUG_ASSERT (widget != NULL);
-    DEBUG_ASSERT (data != NULL);
-
-    tilda_window_add_tab (TILDA_WINDOW(data));
-}
-
-static void
-menu_close_tab_cb (GtkWidget *widget, gpointer data)
-{
-    DEBUG_FUNCTION ("menu_close_tab_cb");
-    DEBUG_ASSERT (widget != NULL);
-    DEBUG_ASSERT (data != NULL);
-
-    tilda_window_close_current_tab (TILDA_WINDOW(data));
-}
-
 static void popup_menu (tilda_window *tw, tilda_term *tt)
 {
     DEBUG_FUNCTION ("popup_menu");
@@ -659,9 +630,6 @@ static void popup_menu (tilda_window *tw, tilda_term *tt)
     static const gchar menu_str[] =
         "<ui>"
             "<popup name=\"popup-menu\">"
-                "<menuitem action=\"new-tab\" />"
-                "<menuitem action=\"close-tab\" />"
-                "<separator />"
                 "<menuitem action=\"copy\" />"
                 "<menuitem action=\"paste\" />"
                 "<separator />"
@@ -675,14 +643,6 @@ static void popup_menu (tilda_window *tw, tilda_term *tt)
     action_group = gtk_action_group_new ("popup-menu-action-group");
 
     /* Add Actions and connect callbacks */
-    action = gtk_action_new ("new-tab", _("_New Tab"), NULL, GTK_STOCK_ADD);
-    gtk_action_group_add_action_with_accel (action_group, action, "<Ctrl><Shift>t");
-    g_signal_connect (G_OBJECT(action), "activate", G_CALLBACK(menu_add_tab_cb), tw);
-
-    action = gtk_action_new ("close-tab", _("_Close Tab"), NULL, GTK_STOCK_CLOSE);
-    gtk_action_group_add_action_with_accel (action_group, action, "<Ctrl><Shift>w");
-    g_signal_connect (G_OBJECT(action), "activate", G_CALLBACK(menu_close_tab_cb), tw);
-
     action = gtk_action_new ("copy", NULL, NULL, GTK_STOCK_COPY);
     gtk_action_group_add_action_with_accel (action_group, action, "<Ctrl><Shift>c");
     g_signal_connect (G_OBJECT(action), "activate", G_CALLBACK(menu_copy_cb), tt);

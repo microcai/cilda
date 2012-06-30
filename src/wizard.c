@@ -105,7 +105,7 @@ gint wizard (tilda_window *ltw)
      * validation easier. */
     tilda_keygrabber_unbind (config_getstr ("key"));
 
-    window_title = g_strdup_printf ("Tilda %d Config", ltw->instance);
+    window_title = g_strdup_printf ("Tilda Config");
     gtk_window_set_title (GTK_WINDOW(wizard_window), window_title);
     gtk_window_set_keep_above (GTK_WINDOW(wizard_window), TRUE);
     gtk_widget_show_all (wizard_window);
@@ -307,14 +307,6 @@ static void check_do_not_show_in_taskbar_toggled_cb (GtkWidget *w)
     gtk_window_set_skip_taskbar_hint (GTK_WINDOW(tw->window), status);
 }
 
-static void check_show_notebook_border_toggled_cb (GtkWidget *w)
-{
-    const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
-
-    config_setbool ("notebook_border", status);
-    gtk_notebook_set_show_border (GTK_NOTEBOOK (tw->notebook), status);
-}
-
 static void check_always_on_top_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
@@ -335,90 +327,53 @@ static void check_enable_double_buffering_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("double_buffer", status);
+    gtk_widget_set_double_buffered (GTK_WIDGET(tw->term->vte_term), status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        //gtk_widget_set_double_buffered (VTE_TERMINAL(tt->vte_term), status);
-        gtk_widget_set_double_buffered (GTK_WIDGET(tt->vte_term), status);
-    }
 }
 
 static void check_terminal_bell_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("bell", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_audible_bell (VTE_TERMINAL(tt->vte_term), status);
-        vte_terminal_set_visible_bell (VTE_TERMINAL(tt->vte_term), !status);
-    }
+	vte_terminal_set_audible_bell (VTE_TERMINAL(tw->term->vte_term), status);
+	vte_terminal_set_visible_bell (VTE_TERMINAL(tw->term->vte_term), !status);
+
 }
 
 static void check_cursor_blinks_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("blinks", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_cursor_blinks (VTE_TERMINAL(tt->vte_term), status);
-    }
+    vte_terminal_set_cursor_blinks (VTE_TERMINAL(tw->term->vte_term), status);
 }
 
-static void check_enable_antialiasing_toggled_cb (GtkWidget *w)
+static void check_enable_antialiasing_toggled_cb(GtkWidget *w)
 {
-    const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
-    gint i;
-    tilda_term *tt;
+	const gboolean status = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w) );
+	gint i;
 
-    config_setbool ("antialias", status);
+	config_setbool("antialias", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_font_from_string_full (VTE_TERMINAL(tt->vte_term), config_getstr ("font"), status);
-    }
+	vte_terminal_set_font_from_string_full(VTE_TERMINAL(tw->term->vte_term),
+			config_getstr("font"), status);
 }
 
 static void check_allow_bold_text_toggled_cb (GtkWidget *w)
 {
-    const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
-    gint i;
-    tilda_term *tt;
+	const gboolean status = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w) );
+	gint i;
 
-    config_setbool ("bold", status);
+	config_setbool("bold", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_allow_bold (VTE_TERMINAL(tt->vte_term), status);
-    }
-}
-
-static void combo_tab_pos_changed_cb (GtkWidget *w)
-{
-    const gint status = gtk_combo_box_get_active (GTK_COMBO_BOX(w));
-    const gint positions[] = { GTK_POS_TOP,
-                             GTK_POS_BOTTOM,
-                             GTK_POS_LEFT,
-                             GTK_POS_RIGHT };
-
-    if (status < 0 || status > 4) {
-        DEBUG_ERROR ("Notebook tab position invalid");
-        g_printerr (_("Invalid tab position setting, ignoring\n"));
-        return;
-    }
-
-    config_setint ("tab_pos", status);
-    gtk_notebook_set_tab_pos (GTK_NOTEBOOK(tw->notebook), positions[status]);
+	vte_terminal_set_allow_bold(VTE_TERMINAL(tw->term->vte_term), status);
 }
 
 static void button_font_font_set_cb (GtkWidget *w)
@@ -426,14 +381,9 @@ static void button_font_font_set_cb (GtkWidget *w)
     const gchar *font = gtk_font_button_get_font_name (GTK_FONT_BUTTON (w));
     const gboolean antialias = config_getbool ("antialias");
     gint i;
-    tilda_term *tt;
 
     config_setstr ("font", font);
-
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_font_from_string_full (VTE_TERMINAL(tt->vte_term), font, antialias);
-    }
+    vte_terminal_set_font_from_string_full (VTE_TERMINAL(tw->term->vte_term), font, antialias);
 }
 
 
@@ -636,7 +586,6 @@ static void check_enable_transparency_toggled_cb (GtkWidget *w)
     const GtkWidget *spin_level_of_transparency = gtk_builder_get_object (builder, "spin_level_of_transparency");
     const gdouble transparency_level = (gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(spin_level_of_transparency)) / 100.0);
     gint i;
-    tilda_term *tt;
 
     config_setbool ("enable_transparency", status);
 
@@ -645,21 +594,16 @@ static void check_enable_transparency_toggled_cb (GtkWidget *w)
 
     if (status)
     {
-        for (i=0; i<g_list_length (tw->terms); i++) {
-            tt = g_list_nth_data (tw->terms, i);
-            vte_terminal_set_background_saturation (VTE_TERMINAL(tt->vte_term), transparency_level);
-            vte_terminal_set_background_transparent(VTE_TERMINAL(tt->vte_term), !tw->have_argb_visual);
-            vte_terminal_set_opacity (VTE_TERMINAL(tt->vte_term), (1.0 - transparency_level) * 0xffff);
-        }
+    	vte_terminal_set_background_saturation (VTE_TERMINAL(tw->term->vte_term), transparency_level);
+    	vte_terminal_set_background_transparent(VTE_TERMINAL(tw->term->vte_term), !tw->have_argb_visual);
+    	vte_terminal_set_opacity (VTE_TERMINAL(tw->term->vte_term), (1.0 - transparency_level) * 0xffff);
+
     }
     else
     {
-        for (i=0; i<g_list_length (tw->terms); i++) {
-            tt = g_list_nth_data (tw->terms, i);
-            vte_terminal_set_background_saturation (VTE_TERMINAL(tt->vte_term), 0);
-            vte_terminal_set_background_transparent(VTE_TERMINAL(tt->vte_term), FALSE);
-            vte_terminal_set_opacity (VTE_TERMINAL(tt->vte_term), 0xffff);
-        }
+    	vte_terminal_set_background_saturation (VTE_TERMINAL(tw->term->vte_term), 0);
+    	vte_terminal_set_background_transparent(VTE_TERMINAL(tw->term->vte_term), FALSE);
+    	vte_terminal_set_opacity (VTE_TERMINAL(tw->term->vte_term), 0xffff);
     }
 }
 
@@ -668,16 +612,11 @@ static void spin_level_of_transparency_value_changed_cb (GtkWidget *w)
     const gint status = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(w));
     const gdouble transparency_level = (status / 100.0);
     gint i;
-    tilda_term *tt;
 
     config_setint ("transparency", status);
-
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_background_saturation (VTE_TERMINAL(tt->vte_term), transparency_level);
-        vte_terminal_set_opacity (VTE_TERMINAL(tt->vte_term), (1.0 - transparency_level) * 0xffff);
-        vte_terminal_set_background_transparent(VTE_TERMINAL(tt->vte_term), !tw->have_argb_visual);
-    }
+    vte_terminal_set_background_saturation (VTE_TERMINAL(tw->term->vte_term), transparency_level);
+    vte_terminal_set_opacity (VTE_TERMINAL(tw->term->vte_term), (1.0 - transparency_level) * 0xffff);
+    vte_terminal_set_background_transparent(VTE_TERMINAL(tw->term->vte_term), !tw->have_argb_visual);
 }
 
 static void spin_animation_delay_value_changed_cb (GtkWidget *w)
@@ -730,43 +669,37 @@ static void check_animated_pulldown_toggled_cb (GtkWidget *w)
     }
 }
 
-static void check_use_image_for_background_toggled_cb (GtkWidget *w)
+static void check_use_image_for_background_toggled_cb(GtkWidget *w)
 {
-    const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
-    const GtkWidget *button_background_image = gtk_builder_get_object (builder, "button_background_image");
-    const gchar *image = config_getstr ("image");
-    gint i;
-    tilda_term *tt;
+	const gboolean status = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w) );
+	const GtkWidget *button_background_image = gtk_builder_get_object(builder,
+			"button_background_image");
+	const gchar *image = config_getstr("image");
+	gint i;
 
+	config_setbool("use_image", status);
 
-    config_setbool ("use_image", status);
+	gtk_widget_set_sensitive(button_background_image, status);
 
-    gtk_widget_set_sensitive (button_background_image, status);
+	if (status)
+		vte_terminal_set_background_image_file(VTE_TERMINAL(tw->term->vte_term),
+				image);
+	else
+		vte_terminal_set_background_image_file(VTE_TERMINAL(tw->term->vte_term),
+				NULL );
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-
-        if (status)
-            vte_terminal_set_background_image_file (VTE_TERMINAL(tt->vte_term), image);
-        else
-            vte_terminal_set_background_image_file (VTE_TERMINAL(tt->vte_term), NULL);
-    }
 }
 
 static void button_background_image_selection_changed_cb (GtkWidget *w)
 {
     const gchar *image = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(w));
     gint i;
-    tilda_term *tt;
 
     config_setstr ("image", image);
 
     if (config_getbool ("use_image"))
     {
-        for (i=0; i<g_list_length (tw->terms); i++) {
-            tt = g_list_nth_data (tw->terms, i);
-            vte_terminal_set_background_image_file (VTE_TERMINAL(tt->vte_term), image);
-        }
+    	vte_terminal_set_background_image_file (VTE_TERMINAL(tw->term->vte_term), image);
     }
 }
 
@@ -776,7 +709,7 @@ static void combo_colorschemes_changed_cb (GtkWidget *w)
     const GtkWidget *colorbutton_text = gtk_builder_get_object (builder, "colorbutton_text");
     const GtkWidget *colorbutton_back = gtk_builder_get_object (builder, "colorbutton_back");
     GdkColor gdk_text, gdk_back;
-    tilda_term *tt;
+
     gint i;
     gboolean nochange = FALSE;
 
@@ -814,12 +747,9 @@ static void combo_colorschemes_changed_cb (GtkWidget *w)
 
         gtk_color_button_set_color (GTK_COLOR_BUTTON(colorbutton_text), &gdk_text);
         gtk_color_button_set_color (GTK_COLOR_BUTTON(colorbutton_back), &gdk_back);
+        vte_terminal_set_color_foreground (VTE_TERMINAL(tw->term->vte_term), &gdk_text);
+        vte_terminal_set_color_background (VTE_TERMINAL(tw->term->vte_term), &gdk_back);
 
-        for (i=0; i<g_list_length (tw->terms); i++) {
-            tt = g_list_nth_data (tw->terms, i);
-            vte_terminal_set_color_foreground (VTE_TERMINAL(tt->vte_term), &gdk_text);
-            vte_terminal_set_color_background (VTE_TERMINAL(tt->vte_term), &gdk_back);
-        }
     }
 }
 
@@ -827,7 +757,7 @@ static void colorbutton_text_color_set_cb (GtkWidget *w)
 {
     const GtkWidget *combo_colorschemes = gtk_builder_get_object (builder, "combo_colorschemes");
     gint i;
-    tilda_term *tt;
+
     GdkColor gdk_text_color;
 
     /* The user just changed colors manually, so set the scheme to "Custom" */
@@ -840,17 +770,15 @@ static void colorbutton_text_color_set_cb (GtkWidget *w)
     config_setint ("text_green", gdk_text_color.green);
     config_setint ("text_blue", gdk_text_color.blue);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_color_foreground (VTE_TERMINAL(tt->vte_term), &gdk_text_color);
-    }
+    vte_terminal_set_color_foreground (VTE_TERMINAL(tw->term->vte_term), &gdk_text_color);
+
 }
 
 static void colorbutton_back_color_set_cb (GtkWidget *w)
 {
     const GtkWidget *combo_colorschemes = gtk_builder_get_object (builder, "combo_colorschemes");
     gint i;
-    tilda_term *tt;
+
     GdkColor gdk_back_color;
 
     /* The user just changed colors manually, so set the scheme to "Custom" */
@@ -863,81 +791,55 @@ static void colorbutton_back_color_set_cb (GtkWidget *w)
     config_setint ("back_green", gdk_back_color.green);
     config_setint ("back_blue", gdk_back_color.blue);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_color_background (VTE_TERMINAL(tt->vte_term), &gdk_back_color);
-    }
+    vte_terminal_set_color_background (VTE_TERMINAL(tw->term->vte_term), &gdk_back_color);
 }
 
 static void combo_scrollbar_position_changed_cb (GtkWidget *w)
 {
     const gint status = gtk_combo_box_get_active (GTK_COMBO_BOX(w));
     gint i;
-    tilda_term *tt;
 
     config_setint ("scrollbar_pos", status);
-
-    for (i=0; i<g_list_length (tw->terms); i++)
-    {
-        tt = g_list_nth_data (tw->terms, i);
-        tilda_term_set_scrollbar_position (tt, status);
-    }
+    tilda_term_set_scrollbar_position (tw->term, status);
 }
 
 static void spin_scrollback_amount_value_changed_cb (GtkWidget *w)
 {
     const gint status = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setint ("lines", status);
-
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_scrollback_lines (VTE_TERMINAL(tt->vte_term), status);
-    }
+    vte_terminal_set_scrollback_lines (VTE_TERMINAL(tw->term->vte_term), status);
 }
 
 static void check_scroll_on_output_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("scroll_on_output", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_scroll_on_output (VTE_TERMINAL(tt->vte_term), status);
-    }
+    vte_terminal_set_scroll_on_output (VTE_TERMINAL(tw->term->vte_term), status);
 }
 
 static void check_scroll_on_keystroke_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("scroll_on_key", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_scroll_on_keystroke (VTE_TERMINAL(tt->vte_term), status);
-    }
+    vte_terminal_set_scroll_on_keystroke (VTE_TERMINAL(tw->term->vte_term), status);
 }
 
 static void check_scroll_background_toggled_cb (GtkWidget *w)
 {
     const gboolean status = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(w));
     gint i;
-    tilda_term *tt;
 
     config_setbool ("scroll_background", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_scroll_background (VTE_TERMINAL(tt->vte_term), status);
-    }
+    vte_terminal_set_scroll_background (VTE_TERMINAL(tw->term->vte_term), status);
 }
 
 static void combo_backspace_binding_changed_cb (GtkWidget *w)
@@ -948,14 +850,11 @@ static void combo_backspace_binding_changed_cb (GtkWidget *w)
                           VTE_ERASE_ASCII_BACKSPACE,
                           VTE_ERASE_AUTO };
     gint i;
-    tilda_term *tt;
+
 
     config_setint ("backspace_key", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_backspace_binding (VTE_TERMINAL(tt->vte_term), keys[status]);
-    }
+    vte_terminal_set_backspace_binding (VTE_TERMINAL(tw->term->vte_term), keys[status]);
 }
 
 static void combo_delete_binding_changed_cb (GtkWidget *w)
@@ -966,14 +865,10 @@ static void combo_delete_binding_changed_cb (GtkWidget *w)
                           VTE_ERASE_ASCII_BACKSPACE,
                           VTE_ERASE_AUTO };
     gint i;
-    tilda_term *tt;
 
     config_setint ("delete_key", status);
 
-    for (i=0; i<g_list_length (tw->terms); i++) {
-        tt = g_list_nth_data (tw->terms, i);
-        vte_terminal_set_delete_binding (VTE_TERMINAL(tt->vte_term), keys[status]);
-    }
+    vte_terminal_set_delete_binding (VTE_TERMINAL(tw->term->vte_term), keys[status]);
 }
 
 static void button_reset_compatibility_options_clicked_cb (GtkWidget *w)
@@ -1127,8 +1022,7 @@ static void connect_wizard_signals ()
     /* General Tab */
     CONNECT_SIGNAL ("check_display_on_all_workspaces","toggled",check_display_on_all_workspaces_toggled_cb);
     CONNECT_SIGNAL ("check_do_not_show_in_taskbar","toggled",check_do_not_show_in_taskbar_toggled_cb);
-    CONNECT_SIGNAL ("check_show_notebook_border","toggled",check_show_notebook_border_toggled_cb);
-    CONNECT_SIGNAL ("check_always_on_top","toggled",check_always_on_top_toggled_cb);
+        CONNECT_SIGNAL ("check_always_on_top","toggled",check_always_on_top_toggled_cb);
     CONNECT_SIGNAL ("check_start_tilda_hidden","toggled",check_start_tilda_hidden_toggled_cb);
     CONNECT_SIGNAL ("check_enable_double_buffering","toggled",check_enable_double_buffering_toggled_cb);
 
@@ -1137,7 +1031,6 @@ static void connect_wizard_signals ()
 
     CONNECT_SIGNAL ("check_enable_antialiasing","toggled",check_enable_antialiasing_toggled_cb);
     CONNECT_SIGNAL ("check_allow_bold_text","toggled",check_allow_bold_text_toggled_cb);
-    CONNECT_SIGNAL ("combo_tab_pos","changed",combo_tab_pos_changed_cb);
     CONNECT_SIGNAL ("button_font","font-set",button_font_font_set_cb);
 
     /* Title and Command Tab */

@@ -22,7 +22,6 @@
 #include <debug.h>
 #include <key_grabber.h>
 #include <tilda.h>
-#include <xerror.h>
 #include <translation.h>
 #include <configsys.h>
 #include <tomboykeybinder.h>

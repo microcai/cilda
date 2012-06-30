@@ -22,8 +22,7 @@ tilda_SOURCES = configsys.h configsys.c \
 		tilda_window.h tilda_window.c \
 		tomboykeybinder.h tomboykeybinder.c \
 		translation.h \
-		wizard.h wizard.c \
-		xerror.h xerror.c
+		wizard.h wizard.c 
 
 tilda_CFLAGS = $(AM_CFLAGS) \
 		@GTK_CFLAGS@ \
