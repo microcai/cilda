@@ -17,7 +17,7 @@
 
 /* Some stolen from yeahconsole -- loving that open source :) */
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <debug.h>
 #include <key_grabber.h>
@@ -218,17 +218,17 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
         if (config_getbool ("pinned"))
             gtk_window_stick (GTK_WINDOW (tw->window));
 
-        //if (config_getbool ("animation"))
-        //{
-            //for (i=0; i<16; i++)
-            //{
-                //gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
-                //gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
+        if (config_getbool ("animation"))
+        {
+            for (i=0; i<16; i++)
+            {
+                gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
+                gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
 
-                //process_all_pending_gtk_events ();
-                //g_usleep (config_getint ("slide_sleep_usec"));
-            //}
-        //}
+                process_all_pending_gtk_events ();
+                g_usleep (config_getint ("slide_sleep_usec"));
+            }
+        }
 
         //debug_printf ("pull(): MOVED DOWN\n");
         tw->current_state = DOWN;
@@ -248,17 +248,17 @@ void pull (struct tilda_window_ *tw, enum pull_state state)
             return ;
         }
 
-        //if (config_getbool ("animation"))
-        //{
-            //for (i=15; i>=0; i--)
-            //{
-                //gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
-                //gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
+        if (config_getbool ("animation"))
+        {
+            for (i=15; i>=0; i--)
+            {
+                gtk_window_move (GTK_WINDOW(tw->window), posIV[2][i], posIV[0][i]);
+                gtk_window_resize (GTK_WINDOW(tw->window), posIV[3][i], posIV[1][i]);
 
-                //process_all_pending_gtk_events ();
-                //g_usleep (config_getint ("slide_sleep_usec"));
-            //}
-        //}
+                process_all_pending_gtk_events ();
+                g_usleep (config_getint ("slide_sleep_usec"));
+            }
+        }
 
         /* All we have to do at this point is hide the window.
          * Case 1 - Animation on:  The window has shrunk, just hide it

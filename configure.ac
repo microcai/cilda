@@ -3,10 +3,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([Tilda], [0.9.6], [http://bugs.launchpad.net/tilda])
+AC_INIT([Cilda], [0.9.6], [])
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([src/tilda.c])
-AM_CONFIG_HEADER([tilda-config.h:tilda-config.h.in])
+AC_CONFIG_SRCDIR([src/cilda.c])
+AM_CONFIG_HEADER([cilda-config.h:cilda-config.h.in])
 
 if test "x$enable_maintainer_flags" = "xyes"; then
 	enable_debug="yes"
@@ -35,9 +35,6 @@ case $LEX in
 		;;
 esac
 
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
-
 # Checks for libraries.
 PKG_PROG_PKG_CONFIG
 PKG_CHECK_MODULES([GTK], [gtk+-3.0])
@@ -47,6 +44,5 @@ PKG_CHECK_MODULES([LIBCONFUSE], [libconfuse])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-                 po/Makefile.in
-                 tilda.desktop])
+                 cilda.desktop])
 AC_OUTPUT

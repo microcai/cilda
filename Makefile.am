@@ -4,26 +4,16 @@
 AUTOMAKE_OPTIONS = gnu
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = po src
-
-MAINTAINER_CLEAN_FILES = Makefile \
-		src/Makefile \
-		config.log \
-		config.status \
-		stamp-h1 \
-		tilda-config.h
-
-maintainer-clean-generic:
-	-rm $(MAINTAINER_CLEAN_FILES)
+SUBDIRS = src
 
 Applicationsdir = ${datadir}/applications
-Applications_DATA = tilda.desktop
+Applications_DATA = cilda.desktop
 
 Pixmapsdir = ${datadir}/pixmaps
-Pixmaps_DATA = tilda.png
+Pixmaps_DATA = cilda.png
 
-data_DATA = tilda.ui
+data_DATA = cilda.ui
 
-EXTRA_DIST = m4 tilda.desktop.in tilda.png tilda.ui
+EXTRA_DIST = m4 cilda.desktop.in cilda.png cilda.ui
 
 

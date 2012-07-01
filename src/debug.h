@@ -18,7 +18,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <glib.h>
 #include <stdio.h>

@@ -8,32 +8,31 @@ AUTOMAKE_OPTIONS = gnu
 #localedir = $(datadir)/locale
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DDATADIR=\"$(datadir)\" @DEFS@
 
-bin_PROGRAMS = tilda
+bin_PROGRAMS = cilda
 
 # Keep the headers here so that make dist-bzip2 works
-tilda_SOURCES = configsys.h configsys.c \
+cilda_SOURCES = configsys.h configsys.c \
 		debug.h \
 		eggaccelerators.h eggaccelerators.c \
 		gettext.h \
 		key_converter.h key_converter.l \
 		key_grabber.h key_grabber.c \
-		tilda.h tilda.c \
+		tilda.h cilda.c \
 		tilda_terminal.h tilda_terminal.c \
 		tilda_window.h tilda_window.c \
 		tomboykeybinder.h tomboykeybinder.c \
 		translation.h \
 		wizard.h wizard.c 
 
-tilda_CFLAGS = $(AM_CFLAGS) \
+cilda_CFLAGS = $(AM_CFLAGS) \
 		@GTK_CFLAGS@ \
 		@GLIB_CFLAGS@ \
 		@VTE_CFLAGS@ \
 		@LIBCONFUSE_CFLAGS@
 
-tilda_LDADD = $(AM_LDADD) \
+cilda_LDADD = $(AM_LDADD) \
 		@GTK_LIBS@ \
 		@GLIB_LIBS@ \
 		@VTE_LIBS@ \
 		@LIBCONFUSE_LIBS@ \
-		@LTLIBINTL@ \
 		@LEXLIB@

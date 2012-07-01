@@ -14,7 +14,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <debug.h>
 #include <configsys.h>
@@ -30,7 +30,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
-#include <locale.h>
 #include <pwd.h>
 
 #include <X11/Xlib.h>

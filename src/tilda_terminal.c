@@ -14,7 +14,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <debug.h>
 #include <tilda.h>

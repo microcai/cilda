@@ -19,7 +19,7 @@
 
 G_BEGIN_DECLS
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 /* Things for translations */
 #include <gettext.h>

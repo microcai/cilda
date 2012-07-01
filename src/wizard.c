@@ -15,7 +15,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <debug.h>
 #include <tilda.h>
@@ -36,7 +36,7 @@
 #include <limits.h>
 
 /* For use in get_display_dimension() */
-static enum dimensions { HEIGHT, WIDTH };
+enum dimensions { HEIGHT, WIDTH };
 
 /* This will hold the libglade representation of the .glade file.
  * We keep this global so that we can look up any element from any routine.
@@ -65,7 +65,7 @@ gint wizard (tilda_window *ltw)
     DEBUG_ASSERT (ltw != NULL);
 
     gchar *window_title;
-    const gchar *glade_file = g_build_filename (DATADIR, "tilda.ui", NULL);
+    const gchar *glade_file = g_build_filename (DATADIR, "cilda.ui", NULL);
     GtkWidget *wizard_window;
 
     /* Make sure that there isn't already a wizard showing */

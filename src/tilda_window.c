@@ -17,7 +17,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <glib-object.h>
-#include <tilda-config.h>
+#include <cilda-config.h>
 
 #include <debug.h>
 #include <tilda.h>
@@ -216,7 +216,7 @@ tilda_window *tilda_window_init (const gchar *config_file)
     gtk_window_set_keep_above (GTK_WINDOW(tw->window), config_getbool ("above"));
     gtk_window_set_decorated (GTK_WINDOW(tw->window), FALSE);
     gtk_widget_set_size_request (GTK_WIDGET(tw->window), 0, 0);
-    tilda_window_set_icon (tw, g_build_filename (DATADIR, "pixmaps", "tilda.png", NULL));
+    tilda_window_set_icon (tw, g_build_filename (DATADIR, "pixmaps", "cilda.png", NULL));
     tilda_window_setup_alpha_mode (tw);
 
     /* Add keyboard accelerators */
