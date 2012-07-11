@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([Cilda], [0.9.6], [])
+AC_INIT([Cilda], [0.9.7], [])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/cilda.c])
 AM_CONFIG_HEADER([cilda-config.h:cilda-config.h.in])
@@ -44,5 +44,5 @@ PKG_CHECK_MODULES([LIBCONFUSE], [libconfuse])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-                 cilda.desktop])
+                 cilda.desktop.in ])
 AC_OUTPUT

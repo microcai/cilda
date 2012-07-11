@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Cilda
+Exec=@bindir@/cilda
+Icon=@datadir@/pixmaps/cilda.png
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Application;Utility;TerminalEmulator;
