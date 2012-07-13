@@ -3,7 +3,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([Cilda], [0.9.7], [])
+AC_INIT([Cilda], [0.9.8], [])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/cilda.c])
 AM_CONFIG_HEADER([cilda-config.h:cilda-config.h.in])

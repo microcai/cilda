@@ -16,10 +16,6 @@ data_DATA = cilda.ui
 
 EXTRA_DIST = m4 cilda.desktop.in.in cilda.png cilda.ui
 
-
-cilda.desktop.in:cilda.desktop.in.in
-	./config.status $@
-
 cilda.desktop:cilda.desktop.in
 	( \
 		s=`cat $<` ; \
